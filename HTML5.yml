@@ -1,0 +1,37 @@
+name: HTML5
+author: lolmerkat
+version: "1.0"
+languages:
+- html
+- javascript
+- css
+content:
+- name: index.html
+  content:
+  - <!DOCTYPE html>
+  - <html>
+  - <head>
+  - 	<title>MyNewProject</title>
+  - </head>
+  - <body>
+  - 	
+  - </body>
+  - </html>
+- string: src
+  children:
+  - string: assets
+    children: []
+  - string: scripts
+    children:
+    - name: main.js
+      content: []
+  - string: styles
+    children:
+    - name: main.css
+      content:
+      - body {
+      - "\tmargin: 0;"
+      - "\tbackground-color: #262740;"
+      - "}"
+    - name: colors.css
+      content: []
