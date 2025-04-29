@@ -13,14 +13,14 @@ type Directory struct {
 }
 
 func (d *Directory) Expand(path string, logger *log.Logger) {
-	dirPath := fmt.Sprintf("%s/%s/", path, d.Name)
+	dirPath := fmt.Sprintf("%s/%s", path, d.Name)
 	err := os.Mkdir(dirPath, os.ModePerm)
 	if err != nil && !os.IsExist(err){
 		logger.Fatalf("Error creating dir '%s': %v", dirPath, err)
 	}
 
 	for _, child := range d.Children {
-		child.Expand(path, logger)
+		child.Expand(dirPath, logger)
 	}
 	logger.Infof("Created %s", dirPath)
 }
