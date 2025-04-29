@@ -15,10 +15,13 @@ func main() {
 	ui.GetSplash(logger).Print(logger)
 
 	// template :=	getTestTemplate()
-	// TEST: Expanding a template
+	// TEST: EXPANDING A TEMPLATE
 	// template.Expand(".", logger)
-	// TEST: Writing a template
+
+	// TEST: WRITE A TEMPLATE TO A FILE ON DISK
 	// template.WriteToFile(".", logger)
+
+	// TEST: LOADING A TEMPLATE FROM FILE AND EXPADING IT
 	readTemplate := templating.LoadFromFile("./HTML5.yml", logger)
 	readTemplate.Expand(".", logger)
 }

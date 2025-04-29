@@ -17,15 +17,15 @@ content:
   - 	
   - </body>
   - </html>
-- string: src
+- name: src
   children:
-  - string: assets
+  - name: assets
     children: []
-  - string: scripts
+  - name: scripts
     children:
     - name: main.js
       content: []
-  - string: styles
+  - name: styles
     children:
     - name: main.css
       content:
