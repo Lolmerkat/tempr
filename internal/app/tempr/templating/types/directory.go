@@ -8,7 +8,7 @@ import (
 )
 
 type Directory struct {
-	Name     string      `yaml:"string"`
+	Name     string      `yaml:"name"`
 	Children []FSElement `yaml:"children"`
 }
 
