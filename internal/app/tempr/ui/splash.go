@@ -14,10 +14,10 @@ type Splash struct {
 	Text	string
 }
 
-	func GetSplash(logger *log.Logger) Splash {
+func GetSplash(logger *log.Logger) Splash {
 	splash, err := tempr.Files.ReadFile("assets/ascii_title.txt")
 	if err != nil {
-		log.Errorf("Error when readinf file 'assets/ascii_title.txt': %v", err)
+		log.Errorf("Error when reading file 'assets/ascii_title.txt': %v", err)
 	}
 
 	return Splash{
