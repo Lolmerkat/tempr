@@ -5,7 +5,6 @@ import (
 )
 
 type FSElement interface {
-	Expand(path string)
 	Expand(path string, logger *log.Logger)
 }
 
