@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/charmbracelet/log"
+	"github.com/goccy/go-yaml"
 )
 
 type Template struct {
@@ -15,14 +16,82 @@ type Template struct {
 	Content   []FSElement `yaml:"content"`
 }
 
-func (t Template) Expand(path string, logger *log.Logger) {
-	templateDirPath := fmt.Sprintf("%s/%s", path, t.Name)
-	err := os.Mkdir(templateDirPath, os.ModePerm)
-	if err != nil && !os.IsExist(err) {
-		logger.Fatalf("Error creating project directory '%s': %v", templateDirPath, err)
-	}
+type rawTemplate struct {
+    Name      string      `yaml:"name"`
+    Author    string      `yaml:"author,omitempty"`
+    Version   string      `yaml:"version,omitempty"`
+    Languages []string    `yaml:"languages,omitempty"`
+    Content   []rawFSElement `yaml:"content"`
+}
 
-	for _, e := range t.Content {
-		e.Expand(templateDirPath, logger)
-	}
+func (t Template) Expand(path string, logger *log.Logger) {
+    templateDirPath := fmt.Sprintf("%s/%s", path, t.Name)
+    err := os.Mkdir(templateDirPath, os.ModePerm)
+    if err != nil && !os.IsExist(err) {
+        logger.Errorf("Error creating project directory '%s': %v", templateDirPath, err)
+    }
+
+    for _, e := range t.Content {
+        e.Expand(templateDirPath, logger)
+    }
+}
+
+func FromYamlBytes(bytes []byte, logger *log.Logger) Template {
+    var raw rawTemplate
+    err := yaml.Unmarshal(bytes, &raw)
+    if err != nil {
+        logger.Fatalf("Error unmarshalling raw template: %v", err)
+    }
+
+    template := Template{}
+    template.Name = raw.Name
+    template.Author = raw.Author
+    template.Version = raw.Version
+    template.Languages = raw.Languages
+    template.Content = make([]FSElement, 0, len(raw.Content))
+
+    for _, c := range raw.Content {
+        template.Content = append(template.Content, c.ToFSElement(logger))
+    }
+    return template
+}
+
+func LoadFromFile(path string, logger *log.Logger) Template {
+    bytes, err := os.ReadFile(path)
+    if err != nil {
+        logger.Fatalf("Error reading file '%s': %v", path, err)
+    }
+    return FromYamlBytes(bytes, logger)
+}
+
+func (t Template) ToYamlBytes(logger *log.Logger) []byte {
+    yamlBytes, err := yaml.MarshalWithOptions(t)
+    if err != nil {
+        logger.Fatalf("Error mashalling template '%s': %v", t.Name, err)
+    }
+    return yamlBytes
+}
+
+func (t Template) WriteToFile(path string, logger *log.Logger) {
+    bytes := t.ToYamlBytes(logger)
+    filePath := fmt.Sprintf("%s/%s.yml", path, t.Name)
+    file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0664)
+    if err != nil {
+        logger.Fatalf("Error creating template file '%s': %v", filePath, err)
+    }
+    defer file.Close()
+
+    n, err := file.Write(bytes)
+    if err != nil {
+        logger.Fatalf("Error writing template '%s' to '%s': %v", t.Name, filePath, err)
+    }
+
+    // Check if all bytes were written
+    if len(bytes) != n {
+        logger.Warnf(
+            "Template '%s' not written completely to '%s' (only %d out of %d bytes)",
+            t.Name, filePath, n, len(bytes))
+    } else {
+        logger.Infof("Template '%s' successfully written to '%s'", t.Name, filePath)
+    }
 }
