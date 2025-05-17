@@ -2,5 +2,5 @@
     <img src="https://github.com/Lolmerkat/tempr-assets/blob/main/banner/banner.png?raw=true">
 </p>
 
-# tempr
-Simple way of creating, using and sharing project templates.
+Tempr is a simple tool to create, share and use templates to avoid the
+repetetive task of setting up the same project structures all over.
