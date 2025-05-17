@@ -107,11 +107,22 @@ func (t Template) GenerateInfoYaml(logger *log.Logger) ([]byte, error) {
 		Author    string      `yaml:"author,omitempty"`
 		Version   string      `yaml:"version,omitempty"`
 	}
+	infoFileData.Name = t.Name
+	infoFileData.Author = t.Author
+	infoFileData.Version = t.Version
+
 	commentMap := yaml.CommentMap {
 		"$": []*yaml.Comment {
 			{
 				Texts: []string{
-					"This project structure was created using github.com/lolmerkat/tempr",
+					" This project structure was created using github.com/lolmerkat/tempr",
+					" This file contains information about the template used.",
+					" ",
+					" To support the project, keep this file in your codebase",
+					" (and potentially commit it to your repository).",
+					" If you don't want to, that's fine.",
+					" Thank you for using my tool in any way.",
+					" ",
 				},
 				Position: yaml.CommentHeadPosition,
 			},
