@@ -135,7 +135,7 @@ func (t Template) CreateInfoFile(path string, logger *log.Logger) error {
 
 	// create file
 	filePath := fmt.Sprintf("%s/.tempr", path)
-	file, err := os.Open(filePath)
+	file, err := os.Create(filePath)
 	if err != nil {
 		logger.Warnf("Error creating info file: %v", err)
 		return err
