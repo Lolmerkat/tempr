@@ -120,7 +120,7 @@ func (t Template) GenerateInfoYaml(logger *log.Logger) ([]byte, error) {
 
 	bytes, err := yaml.MarshalWithOptions(infoFileData, yaml.WithComment(commentMap))
 	if err != nil {
-		log.Warnf("Error creating info file yaml bytes: %v", err)
+		logger.Warnf("Error creating info file yaml bytes: %v", err)
 		return nil, err
 	}
 	return bytes, nil
@@ -137,7 +137,7 @@ func (t Template) CreateInfoFile(path string, logger *log.Logger) error {
 	filePath := fmt.Sprintf("%s/.tempr", path)
 	file, err := os.Open(filePath)
 	if err != nil {
-		log.Warnf("Error creating info file: %v", err)
+		logger.Warnf("Error creating info file: %v", err)
 		return err
 	}
 	defer file.Close()
@@ -145,7 +145,7 @@ func (t Template) CreateInfoFile(path string, logger *log.Logger) error {
 	// write bytes
 	n, err := file.Write(infoFileBytes)
 	if err != nil {
-		log.Warnf("Error writing info file: %v", err)
+		logger.Warnf("Error writing info file: %v", err)
 		return err
 	}
 
