@@ -1,0 +1,3 @@
+[submodule "tempr-assets"]
+	path = tempr-assets
+	url = https://github.com/lolmerkat/tempr-assets
