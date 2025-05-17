@@ -6,6 +6,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/goccy/go-yaml"
+	"github.com/lolmerkat/tempr/internal/app/tempr/flags"
 )
 
 type Template struct {
@@ -30,6 +31,10 @@ func (t Template) Expand(path string, logger *log.Logger) {
     if err != nil && !os.IsExist(err) {
         logger.Errorf("Error creating project directory '%s': %v", templateDirPath, err)
     }
+
+	if !*flags.DisableInfoFilePtr {
+		t.CreateInfoFile(templateDirPath, logger)
+	}
 
     for _, e := range t.Content {
         e.Expand(templateDirPath, logger)
@@ -94,4 +99,63 @@ func (t Template) WriteToFile(path string, logger *log.Logger) {
     } else {
         logger.Infof("Template '%s' successfully written to '%s'", t.Name, filePath)
     }
+}
+
+func (t Template) GenerateInfoYaml(logger *log.Logger) ([]byte, error) {
+	var infoFileData struct {
+		Name      string      `yaml:"name"`
+		Author    string      `yaml:"author,omitempty"`
+		Version   string      `yaml:"version,omitempty"`
+	}
+	commentMap := yaml.CommentMap {
+		"$": []*yaml.Comment {
+			{
+				Texts: []string{
+					"This project structure was created using github.com/lolmerkat/tempr",
+				},
+				Position: yaml.CommentHeadPosition,
+			},
+		},
+	}
+
+	bytes, err := yaml.MarshalWithOptions(infoFileData, yaml.WithComment(commentMap))
+	if err != nil {
+		log.Warnf("Error creating info file yaml bytes: %v", err)
+		return nil, err
+	}
+	return bytes, nil
+}
+
+func (t Template) CreateInfoFile(path string, logger *log.Logger) error {
+	// get info file bytes
+	infoFileBytes, err := t.GenerateInfoYaml(logger)
+	if err != nil {
+		return err
+	}
+
+	// create file
+	filePath := fmt.Sprintf("%s/.tempr", path)
+	file, err := os.Open(filePath)
+	if err != nil {
+		log.Warnf("Error creating info file: %v", err)
+		return err
+	}
+	defer file.Close()
+
+	// write bytes
+	n, err := file.Write(infoFileBytes)
+	if err != nil {
+		log.Warnf("Error writing info file: %v", err)
+		return err
+	}
+
+	// check if all bytes were written
+	if len(infoFileBytes) != n {
+		logger.Warnf(
+			"Info file '%s' not written completely (only %d out of %d bytes)",
+			filePath, n, len(infoFileBytes))
+	} else {
+		logger.Infof("Info file '%s' written successfully", filePath)
+	}
+	return nil
 }
