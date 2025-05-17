@@ -5,6 +5,7 @@ go 1.23.6
 require (
 	github.com/charmbracelet/lipgloss v1.0.0
 	github.com/charmbracelet/log v0.4.1
+	github.com/goccy/go-yaml v1.17.1
 	github.com/spf13/pflag v1.0.6
 )
 
