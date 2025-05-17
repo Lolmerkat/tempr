@@ -4,8 +4,8 @@ import (
 	flag "github.com/spf13/pflag"
 )
 
-var helpPtr *bool
-var logLevelPtr *int
+var LogLevelPtr *int
+var DisableInfoFilePtr *bool
 
 func Declare() {
 	// log-level
@@ -17,10 +17,15 @@ func Declare() {
 	3: Program information
 	4: Debug information
 `)
+
+	disableInfoFilePtr = flag.Bool("no-info-file", false,
+		"Disables the generation of the '.tempr' info file")
 }
 
 func Handle() {
 	flag.Parse()
+	// TODO: ADD STYLING
 	//vvv  INFO: Flag handlers that should be executed immediately vvv
 	handleLogLevel(logLevelPtr)
+	handleInfoFileCreation(disableInfoFilePtr)
 }
