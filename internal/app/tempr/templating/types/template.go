@@ -6,6 +6,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/goccy/go-yaml"
+	"github.com/lolmerkat/tempr/internal/app/tempr/flags"
 )
 
 type Template struct {
@@ -30,6 +31,10 @@ func (t Template) Expand(path string, logger *log.Logger) {
     if err != nil && !os.IsExist(err) {
         logger.Errorf("Error creating project directory '%s': %v", templateDirPath, err)
     }
+
+	if !*flags.DisableInfoFilePtr {
+		t.CreateInfoFile(templateDirPath, logger)
+	}
 
     for _, e := range t.Content {
         e.Expand(templateDirPath, logger)
@@ -94,4 +99,74 @@ func (t Template) WriteToFile(path string, logger *log.Logger) {
     } else {
         logger.Infof("Template '%s' successfully written to '%s'", t.Name, filePath)
     }
+}
+
+func (t Template) GenerateInfoYaml(logger *log.Logger) ([]byte, error) {
+	var infoFileData struct {
+		Name      string      `yaml:"name"`
+		Author    string      `yaml:"author,omitempty"`
+		Version   string      `yaml:"version,omitempty"`
+	}
+	infoFileData.Name = t.Name
+	infoFileData.Author = t.Author
+	infoFileData.Version = t.Version
+
+	commentMap := yaml.CommentMap {
+		"$": []*yaml.Comment {
+			{
+				Texts: []string{
+					" This project structure was created using github.com/lolmerkat/tempr",
+					" This file contains information about the template used.",
+					" ",
+					" To support the project, keep this file in your codebase",
+					" (and potentially commit it to your repository).",
+					" If you don't want to, that's fine.",
+					" Thank you for using my tool in any way.",
+					" ",
+				},
+				Position: yaml.CommentHeadPosition,
+			},
+		},
+	}
+
+	bytes, err := yaml.MarshalWithOptions(infoFileData, yaml.WithComment(commentMap))
+	if err != nil {
+		logger.Warnf("Error creating info file yaml bytes: %v", err)
+		return nil, err
+	}
+	return bytes, nil
+}
+
+func (t Template) CreateInfoFile(path string, logger *log.Logger) error {
+	// get info file bytes
+	infoFileBytes, err := t.GenerateInfoYaml(logger)
+	if err != nil {
+		return err
+	}
+
+	// create file
+	filePath := fmt.Sprintf("%s/.tempr", path)
+	file, err := os.Create(filePath)
+	if err != nil {
+		logger.Warnf("Error creating info file: %v", err)
+		return err
+	}
+	defer file.Close()
+
+	// write bytes
+	n, err := file.Write(infoFileBytes)
+	if err != nil {
+		logger.Warnf("Error writing info file: %v", err)
+		return err
+	}
+
+	// check if all bytes were written
+	if len(infoFileBytes) != n {
+		logger.Warnf(
+			"Info file '%s' not written completely (only %d out of %d bytes)",
+			filePath, n, len(infoFileBytes))
+	} else {
+		logger.Infof("Info file '%s' written successfully", filePath)
+	}
+	return nil
 }

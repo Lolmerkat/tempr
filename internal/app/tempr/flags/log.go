@@ -17,4 +17,5 @@ func handleLogLevel(level *int) {
 	}
 
 	logger.SetLevel(levelMap[*level])
+	tempr.Logger().Debugf("Loglevel: %d", *level)
 }
